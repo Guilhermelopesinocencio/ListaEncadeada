@@ -1,0 +1,181 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Estrutura do nó da lista
+typedef struct No {
+    int inscricao;
+    char *nome;
+    struct No *prox;
+} No;
+
+No* criarNo(int inscricao, const char *nome);
+void inserirOrdenado(No **inicio, int inscricao, const char *nome);
+void excluirRegistro(No **inicio, int inscricao);
+int contarElementos(No *inicio);
+void exibirLista(No *inicio);
+void liberarLista(No **inicio);
+
+void menuInserir(No **lista);
+void menuExcluir(No **lista);
+void menuMostrarQuantidade(No *lista);
+void menuExibirLista(No *lista);
+
+
+
+int main() {
+    No *lista = NULL;
+    int opcao;
+
+    do {
+        printf("\nFACULDADE ALFREDO NASSER\n");
+        printf("\nMenu de Interações\n");
+        printf("1 - Inserir registro\n");
+        printf("2 - Excluir registro\n");
+        printf("3 - Mostrar quantidade de registros\n");
+        printf("4 - Exibir lista\n");
+        printf("0 - Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                menuInserir(&lista);
+                break;
+            case 2:
+                menuExcluir(&lista);
+                break;
+            case 3:
+                menuMostrarQuantidade(lista);
+                break;
+            case 4:
+                menuExibirLista(lista);
+                break;
+            case 0:
+                liberarLista(&lista);
+                printf("Programa encerrado.\n");
+                break;
+            default:
+                printf("Opção inválida!\n");
+        }
+    } while (opcao != 0);
+
+    return 0;
+}
+
+
+No* criarNo(int inscricao, const char *nome) {
+    No *novo = (No*)malloc(sizeof(No));
+    if (!novo) {
+        printf("Erro ao alocar memória!\n");
+        exit(1);
+    }
+    novo->inscricao = inscricao;
+    novo->nome = strdup(nome);
+    novo->prox = NULL;
+    return novo;
+}
+
+void inserirOrdenado(No **inicio, int inscricao, const char *nome) {
+    No *novo = criarNo(inscricao, nome);
+    if (*inicio == NULL || (*inicio)->inscricao > inscricao) {
+        novo->prox = *inicio;
+        *inicio = novo;
+    } else {
+        No *atual = *inicio;
+        while (atual->prox != NULL && atual->prox->inscricao < inscricao) {
+            atual = atual->prox;
+        }
+        novo->prox = atual->prox;
+        atual->prox = novo;
+    }
+}
+
+void excluirRegistro(No **inicio, int inscricao) {
+    if (*inicio == NULL) {
+        printf("Lista vazia!\n");
+        return;
+    }
+    No *atual = *inicio;
+    No *anterior = NULL;
+
+    while (atual != NULL && atual->inscricao != inscricao) {
+        anterior = atual;
+        atual = atual->prox;
+    }
+
+    if (atual == NULL) {
+        printf("Inscrição %d não encontrada.\n", inscricao);
+        return;
+    }
+
+    if (anterior == NULL) {
+        *inicio = atual->prox;
+    } else {
+        anterior->prox = atual->prox;
+    }
+    free(atual->nome);
+    free(atual);
+    printf("Registro %d excluído com sucesso.\n", inscricao);
+}
+
+int contarElementos(No *inicio) {
+    int contador = 0;
+    while (inicio != NULL) {
+        contador++;
+        inicio = inicio->prox;
+    }
+    return contador;
+}
+
+void exibirLista(No *inicio) {
+    if (inicio == NULL) {
+        printf("Lista vazia!\n");
+        return;
+    }
+    printf("\nLista de registros:\n");
+    while (inicio != NULL) {
+        printf("Inscrição: %d, Nome: %s\n", inicio->inscricao, inicio->nome);
+        inicio = inicio->prox;
+    }
+}
+
+void liberarLista(No **inicio) {
+    No *atual = *inicio;
+    while (atual != NULL) {
+        No *temp = atual;
+        atual = atual->prox;
+        free(temp->nome);
+        free(temp);
+    }
+    *inicio = NULL;
+}
+
+void menuInserir(No **lista) {
+    int inscricao;
+    char nome[100];
+
+    printf("Digite o número da inscrição: ");
+    scanf("%d", &inscricao);
+    printf("Digite o nome: ");
+    scanf(" %[^\n]", nome);
+
+    inserirOrdenado(lista, inscricao, nome);
+}
+
+void menuExcluir(No **lista) {
+    int inscricao;
+
+    printf("Digite o número da inscrição a excluir: ");
+    scanf("%d", &inscricao);
+
+    excluirRegistro(lista, inscricao);
+}
+
+void menuMostrarQuantidade(No *lista) {
+    printf("Quantidade de registros: %d\n", contarElementos(lista));
+}
+
+void menuExibirLista(No *lista) {
+    exibirLista(lista);
+}
